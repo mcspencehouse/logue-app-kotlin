@@ -21,13 +21,7 @@ class SessionManager @Inject constructor(@ApplicationContext context: Context) {
         EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
     )
 
-    var username: String?
-        get() = sharedPreferences.getString("honda_username", null)
-        set(value) = sharedPreferences.edit { putString("honda_username", value) }
 
-    var password: String?
-        get() = sharedPreferences.getString("honda_password", null)
-        set(value) = sharedPreferences.edit { putString("honda_password", value) }
 
     var vin: String?
         get() = sharedPreferences.getString("honda_vin", null)

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">logue</string>
+    <string name="app_name">myLogue</string>
     <string name="battery_widget_name">Battery Status</string>
     <string name="battery_widget_description">Displays the current battery percentage and range of your vehicle.</string>
     <string name="climate_widget_name">Climate Control</string>

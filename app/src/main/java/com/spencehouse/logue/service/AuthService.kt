@@ -25,15 +25,12 @@ class AuthService @Inject constructor(
     var selectedVin: String? = null
 
     suspend fun login(username: String? = null, password: String? = null, vin: String? = null): Result<Unit> {
-        val finalUsername = username ?: sessionManager.username
-        val finalPassword = password ?: sessionManager.password
-
-        if (finalUsername.isNullOrEmpty() || finalPassword.isNullOrEmpty()) {
+        if (username.isNullOrEmpty() || password.isNullOrEmpty()) {
             return Result.failure(Exception("No credentials provided"))
         }
 
         return try {
-            Log.d(tag, "Starting login for $finalUsername")
+            Log.d(tag, "Starting login for $username")
             // 1. Register Client
             val regResp = identityApi.registerClient(
                 mapOf(
@@ -54,8 +51,8 @@ class AuthService @Inject constructor(
                     mapOf(
                         "client_reg_key" to clientRegKey,
                         "device_description" to "Android_Logue_Client",
-                        "username" to finalUsername,
-                        "password" to finalPassword
+                        "username" to username,
+                        "password" to password
                     )
                 )
                 if (tokenResp.isSuccessful) {
@@ -73,18 +70,29 @@ class AuthService @Inject constructor(
 
             sessionManager.accessToken = tokenData.token.accessToken
             sessionManager.hidasIdent = tokenData.user.hidasIdent
-            sessionManager.username = finalUsername
-            sessionManager.password = finalPassword
             Log.d(tag, "Token generated and session saved")
 
             // 3. Get Vehicles
+            return fetchVehicles()
+        } catch (e: Exception) {
+            Log.e(tag, "Login exception", e)
+            Result.failure(e)
+        }
+    }
+
+    suspend fun fetchVehicles(): Result<Unit> {
+        return try {
+            val token = sessionManager.accessToken ?: return Result.failure(Exception("No token"))
+            val ident = sessionManager.hidasIdent ?: return Result.failure(Exception("No hidas_ident"))
+
+            // 3. Get Vehicles
             val vehicleHeaders = Config.COMMON_HEADERS.toMutableMap().apply {
-                put("Authorization", "Bearer ${sessionManager.accessToken}")
+                put("Authorization", "Bearer $token")
                 put("hondaHeaderType.version", "2.0")
                 put("hondaHeaderType.siteId", "00e0e97f0fb543208a918fc946dea334")
                 put("hondaHeaderType.messageId", UUID.randomUUID().toString())
                 put("hondaHeaderType.systemId", "com.honda.dealer.cv_android")
-                put("hondaHeaderType.userId", sessionManager.hidasIdent!!)
+                put("hondaHeaderType.userId", ident)
                 put("hondaHeaderType.clientType", "Mobile")
                 put("hondaHeaderType.collectedTimeStamp", SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", Locale.US).format(
                     Date()
@@ -107,13 +115,13 @@ class AuthService @Inject constructor(
             }
 
             val savedVin = sessionManager.vin
-            this.selectedVin = vin ?: savedVin ?: vehicles.first().vin
+            this.selectedVin = savedVin ?: vehicles.first().vin
             sessionManager.vin = selectedVin
             Log.d(tag, "Selected VIN: $selectedVin")
 
             Result.success(Unit)
         } catch (e: Exception) {
-            Log.e(tag, "Login exception", e)
+            Log.e(tag, "fetchVehicles exception", e)
             Result.failure(e)
         }
     }
@@ -139,6 +147,6 @@ class AuthService @Inject constructor(
     }
 
     fun isLoggedIn(): Boolean {
-        return sessionManager.username != null && sessionManager.password != null
+        return sessionManager.accessToken != null
     }
 }

@@ -50,8 +50,11 @@ class DashboardViewModel @Inject constructor(
 
         viewModelScope.launch {
             if (authService.vehicles.isEmpty()) {
-                Log.d(tag, "Vehicles empty, attempting silent login")
-                authService.login()
+                Log.d(tag, "Vehicles empty, attempting to fetch vehicles")
+                val result = authService.fetchVehicles()
+                if (result.isFailure) {
+                    Log.e(tag, "Failed to fetch vehicles during initialization", result.exceptionOrNull())
+                }
             }
 
             val mappedVehicles = authService.vehicles.map {

@@ -42,3 +42,11 @@
 -keep public interface org.eclipse.paho.client.mqttv3.MqttCallback { *; }
 
 -dontwarn org.eclipse.paho.client.mqttv3.**
+
+# Remove all Android Log calls (except Errors) in the Release build
+-assumenosideeffects class android.util.Log {
+    public static int v(...);
+    public static int d(...);
+    public static int i(...);
+    public static int w(...);
+}

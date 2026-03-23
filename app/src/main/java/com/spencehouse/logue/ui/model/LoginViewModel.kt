@@ -18,12 +18,6 @@ class LoginViewModel @Inject constructor(
     var uiState by mutableStateOf(LoginUiState())
         private set
 
-    init {
-        // Pre-fill credentials if available
-        if(authService.isLoggedIn()) {
-            uiState = uiState.copy(username = authService.sessionManager.username ?: "", password = authService.sessionManager.password ?: "")
-        }
-    }
 
     fun onUsernameChange(username: String) {
         uiState = uiState.copy(username = username, error = null)
@@ -43,7 +37,7 @@ class LoginViewModel @Inject constructor(
             uiState = uiState.copy(isLoading = true)
             val result = authService.login(uiState.username, uiState.password)
             result.onSuccess {
-                uiState = uiState.copy(isLoading = false, loginSuccess = true)
+                uiState = uiState.copy(isLoading = false, loginSuccess = true, username = "", password = "")
             }.onFailure {
                 uiState = uiState.copy(isLoading = false, error = it.message ?: "An unknown error occurred")
             }
