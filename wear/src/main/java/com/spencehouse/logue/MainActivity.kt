@@ -184,17 +184,6 @@ fun WearApp(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 24.dp)
             ) {
-                // Title
-                item {
-                    ListHeader {
-                        Text(
-                            text = "Logue Control",
-                            style = MaterialTheme.typography.title3,
-                            color = MaterialTheme.colors.primary,
-                            textAlign = TextAlign.Center
-                        )
-                    }
-                }
 
                 // Battery Telemetry Redesigned
                 item {
