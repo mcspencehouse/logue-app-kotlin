@@ -52,6 +52,14 @@
                 android:value="Vehicle Climate Control" />
         </service>
 
+        <service
+            android:name=".service.PhoneWearableListenerService"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.google.android.gms.wearable.BIND_LISTENER" />
+            </intent-filter>
+        </service>
+
         <receiver
             android:name=".widget.BatteryWidgetReceiver"
             android:label="@string/battery_widget_name"

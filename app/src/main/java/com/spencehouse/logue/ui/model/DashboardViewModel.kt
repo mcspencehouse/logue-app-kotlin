@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.spencehouse.logue.service.AuthService
 import com.spencehouse.logue.service.VehicleService
+import com.spencehouse.logue.service.WearableSyncManager
 import com.spencehouse.logue.service.mqtt.AwsMqttClient
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -31,7 +32,8 @@ import javax.inject.Inject
 class DashboardViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val authService: AuthService,
-    private val vehicleService: VehicleService
+    private val vehicleService: VehicleService,
+    private val wearableSyncManager: WearableSyncManager
 ) : ViewModel() {
 
     private val tag = "DashboardViewModel"
@@ -237,6 +239,11 @@ class DashboardViewModel @Inject constructor(
             lastUpdated = SimpleDateFormat("hh:mm:ss a", Locale.getDefault()).format(Date()),
             statusText = "Data Received"
         )
+
+        val vin = authService.selectedVin
+        if (vin != null && battery != null && rangeVal != null) {
+            wearableSyncManager.syncVehicleTelemetry(vin, battery, rangeVal, mainStatus)
+        }
     }
 
     private fun formatTime(chargeTime: JSONObject?): String? {

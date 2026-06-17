@@ -23,3 +23,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "logue"
 include(":app")
+include(":wear")
