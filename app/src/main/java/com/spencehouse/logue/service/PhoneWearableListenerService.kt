@@ -48,7 +48,16 @@ class PhoneWearableListenerService : WearableListenerService() {
                     
                     if (!cachedVin.isNullOrEmpty() && cachedBattery >= 0 && cachedRange >= 0) {
                         Log.i(tag, "Sending cached telemetry on request: Battery $cachedBattery%, Range $cachedRange, Target $targetLimit, Plugged $isPluggedIn")
-                        wearableSyncManager.syncVehicleTelemetry(cachedVin, cachedBattery, cachedRange, cachedStatus, targetLimit, isPluggedIn)
+                        wearableSyncManager.syncVehicleTelemetry(
+                            cachedVin,
+                            cachedBattery,
+                            cachedRange,
+                            cachedStatus,
+                            targetLimit,
+                            isPluggedIn,
+                            sessionManager.useCelsius,
+                            sessionManager.useKilometers
+                        )
                     } else {
                         Log.w(tag, "No cached telemetry available to sync")
                     }
@@ -74,34 +83,36 @@ class PhoneWearableListenerService : WearableListenerService() {
 
         serviceScope.launch {
             try {
-                when (messageEvent.path) {
-                    "/command/lock" -> {
+                val path = messageEvent.path
+                when {
+                    path == "/command/lock" -> {
                         Log.i(tag, "Executing Lock from Wear OS for VIN $vin")
                         vehicleService.requestDoorLock(vin, pin, "alk")
                     }
-                    "/command/unlock" -> {
+                    path == "/command/unlock" -> {
                         Log.i(tag, "Executing Unlock from Wear OS for VIN $vin")
                         vehicleService.requestDoorLock(vin, pin, "dulk")
                     }
-                    "/command/lights" -> {
+                    path == "/command/lights" -> {
                         Log.i(tag, "Executing Flash Lights from Wear OS for VIN $vin")
                         vehicleService.requestLightHorn(vin, pin, "lgt")
                     }
-                    "/command/horn" -> {
+                    path == "/command/horn" -> {
                         Log.i(tag, "Executing Sound Horn from Wear OS for VIN $vin")
                         vehicleService.requestLightHorn(vin, pin, "hrn")
                     }
-                    "/command/climate_start" -> {
-                        Log.i(tag, "Executing Start Climate from Wear OS for VIN $vin")
-                        // Default to 72 degrees F (22C)
-                        vehicleService.startClimate(vin, pin, 72)
+                    path.startsWith("/command/climate_start") -> {
+                        val parts = path.split("/")
+                        val temp = parts.getOrNull(3)?.toIntOrNull() ?: 72
+                        Log.i(tag, "Executing Start Climate from Wear OS for VIN $vin with temp $temp")
+                        vehicleService.startClimate(vin, pin, temp)
                     }
-                    "/command/climate_stop" -> {
+                    path == "/command/climate_stop" -> {
                         Log.i(tag, "Executing Stop Climate from Wear OS for VIN $vin")
                         vehicleService.stopClimate(vin, pin)
                     }
                     else -> {
-                        Log.w(tag, "Unknown path from Wear OS: ${messageEvent.path}")
+                        Log.w(tag, "Unknown path from Wear OS: $path")
                     }
                 }
             } catch (e: Exception) {

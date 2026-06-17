@@ -26,9 +26,11 @@ class WatchWearableListenerService : WearableListenerService() {
                         val statusText = dataMap.getString("statusText", "")
                         val targetLimit = dataMap.getInt("targetLimit", 80)
                         val isPluggedIn = dataMap.getBoolean("isPluggedIn", false)
+                        val useCelsius = dataMap.getBoolean("useCelsius", false)
+                        val useKilometers = dataMap.getBoolean("useKilometers", false)
                         val timestamp = dataMap.getLong("timestamp", 0)
 
-                        Log.i(tag, "Received telemetry from phone - VIN: $vin, Battery: $batteryPct%, Range: $range, Target: $targetLimit%, Plugged: $isPluggedIn")
+                        Log.i(tag, "Received telemetry from phone - VIN: $vin, Battery: $batteryPct%, Range: $range, Target: $targetLimit%, Plugged: $isPluggedIn, Celsius: $useCelsius, KM: $useKilometers")
 
                         // Save to preferences
                         getSharedPreferences("wear_logue_prefs", Context.MODE_PRIVATE)
@@ -39,6 +41,8 @@ class WatchWearableListenerService : WearableListenerService() {
                             .putString("statusText", statusText)
                             .putInt("targetLimit", targetLimit)
                             .putBoolean("isPluggedIn", isPluggedIn)
+                            .putBoolean("useCelsius", useCelsius)
+                            .putBoolean("useKilometers", useKilometers)
                             .putLong("timestamp", timestamp)
                             .apply()
 

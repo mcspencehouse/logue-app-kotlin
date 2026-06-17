@@ -18,7 +18,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Bolt
+import androidx.compose.material.icons.filled.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import kotlin.math.cos
@@ -81,6 +81,15 @@ fun WearApp(
     var timestamp by remember { mutableStateOf(sharedPrefs.getLong("timestamp", 0)) }
     var targetLimit by remember { mutableStateOf(sharedPrefs.getInt("targetLimit", 80)) }
     var isPluggedIn by remember { mutableStateOf(sharedPrefs.getBoolean("isPluggedIn", false)) }
+    var useCelsius by remember { mutableStateOf(sharedPrefs.getBoolean("useCelsius", false)) }
+    var useKilometers by remember { mutableStateOf(sharedPrefs.getBoolean("useKilometers", false)) }
+
+    // Selected AC target temp on the watch
+    var acTemp by remember { mutableStateOf(if (useCelsius) 22 else 72) }
+
+    LaunchedEffect(useCelsius) {
+        acTemp = if (useCelsius) 22 else 72
+    }
 
     // Request fresh telemetry data on launch
     LaunchedEffect(Unit) {
@@ -97,6 +106,8 @@ fun WearApp(
                 "timestamp" -> timestamp = prefs.getLong(key, 0)
                 "targetLimit" -> targetLimit = prefs.getInt(key, 80)
                 "isPluggedIn" -> isPluggedIn = prefs.getBoolean(key, false)
+                "useCelsius" -> useCelsius = prefs.getBoolean(key, false)
+                "useKilometers" -> useKilometers = prefs.getBoolean(key, false)
             }
         }
         sharedPrefs.registerOnSharedPreferenceChangeListener(listener)
@@ -209,7 +220,11 @@ fun WearApp(
                                 fontWeight = FontWeight.Bold
                             )
                         }
-                        val rangeStr = if (range >= 0) "$range mi range" else "-- mi range"
+                        val rangeStr = if (range >= 0) {
+                            if (useKilometers) "${(range * 1.609).toInt()} km range" else "$range mi range"
+                        } else {
+                            "-- range"
+                        }
                         Text(
                             text = rangeStr,
                             style = MaterialTheme.typography.body1,
@@ -241,63 +256,164 @@ fun WearApp(
                 // Remote Command: Lock / Unlock
                 item {
                     Row(
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
-                        horizontalArrangement = Arrangement.SpaceEvenly
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Chip(
+                        Button(
                             onClick = { onSendCommand("/command/lock") },
-                            label = { Text("Lock") },
-                            modifier = Modifier.weight(1f).padding(end = 4.dp),
-                            colors = ChipDefaults.primaryChipColors()
-                        )
-                        Chip(
+                            colors = ButtonDefaults.primaryButtonColors(),
+                            modifier = Modifier.size(52.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Lock,
+                                contentDescription = "Lock Doors",
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Button(
                             onClick = { onSendCommand("/command/unlock") },
-                            label = { Text("Unlock") },
-                            modifier = Modifier.weight(1f).padding(start = 4.dp),
-                            colors = ChipDefaults.primaryChipColors()
-                        )
+                            colors = ButtonDefaults.primaryButtonColors(),
+                            modifier = Modifier.size(52.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.LockOpen,
+                                contentDescription = "Unlock Doors",
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
                     }
                 }
+
+                item { Spacer(modifier = Modifier.height(12.dp)) }
+
+                // Remote Command: AC Temperature Adjuster
+                item {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)
+                    ) {
+                        Text(
+                            text = "AC Temperature",
+                            style = MaterialTheme.typography.caption1,
+                            color = MaterialTheme.colors.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Button(
+                                onClick = {
+                                    val minTemp = if (useCelsius) 15 else 60
+                                    if (acTemp > minTemp) acTemp--
+                                },
+                                colors = ButtonDefaults.secondaryButtonColors(),
+                                modifier = Modifier.size(36.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Remove,
+                                    contentDescription = "Decrease Temp",
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                            
+                            Text(
+                                text = if (useCelsius) "$acTemp°C" else "$acTemp°F",
+                                style = MaterialTheme.typography.body1,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(horizontal = 12.dp)
+                            )
+                            
+                            Button(
+                                onClick = {
+                                    val maxTemp = if (useCelsius) 29 else 84
+                                    if (acTemp < maxTemp) acTemp++
+                                },
+                                colors = ButtonDefaults.secondaryButtonColors(),
+                                modifier = Modifier.size(36.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Add,
+                                    contentDescription = "Increase Temp",
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+
+                item { Spacer(modifier = Modifier.height(8.dp)) }
 
                 // Remote Command: Climate Control
                 item {
                     Row(
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp),
-                        horizontalArrangement = Arrangement.SpaceEvenly
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Chip(
-                            onClick = { onSendCommand("/command/climate_start") },
-                            label = { Text("AC Start") },
-                            modifier = Modifier.weight(1f).padding(end = 4.dp),
-                            colors = ChipDefaults.secondaryChipColors()
-                        )
-                        Chip(
+                        Button(
+                            onClick = { onSendCommand("/command/climate_start/$acTemp") },
+                            colors = ButtonDefaults.secondaryButtonColors(),
+                            modifier = Modifier.size(52.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.AcUnit,
+                                contentDescription = "Start AC",
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Button(
                             onClick = { onSendCommand("/command/climate_stop") },
-                            label = { Text("AC Stop") },
-                            modifier = Modifier.weight(1f).padding(start = 4.dp),
-                            colors = ChipDefaults.secondaryChipColors()
-                        )
+                            colors = ButtonDefaults.primaryButtonColors(
+                                backgroundColor = MaterialTheme.colors.error,
+                                contentColor = MaterialTheme.colors.onError
+                            ),
+                            modifier = Modifier.size(52.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Stop,
+                                contentDescription = "Stop AC",
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
                     }
                 }
+
+                item { Spacer(modifier = Modifier.height(12.dp)) }
 
                 // Remote Command: Lights & Horn
                 item {
                     Row(
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
-                        horizontalArrangement = Arrangement.SpaceEvenly
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Chip(
+                        Button(
                             onClick = { onSendCommand("/command/lights") },
-                            label = { Text("Lights") },
-                            modifier = Modifier.weight(1f).padding(end = 4.dp),
-                            colors = ChipDefaults.secondaryChipColors()
-                        )
-                        Chip(
+                            colors = ButtonDefaults.secondaryButtonColors(),
+                            modifier = Modifier.size(52.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Lightbulb,
+                                contentDescription = "Flash Lights",
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Button(
                             onClick = { onSendCommand("/command/horn") },
-                            label = { Text("Horn") },
-                            modifier = Modifier.weight(1f).padding(start = 4.dp),
-                            colors = ChipDefaults.secondaryChipColors()
-                        )
+                            colors = ButtonDefaults.secondaryButtonColors(),
+                            modifier = Modifier.size(52.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.VolumeUp,
+                                contentDescription = "Sound Horn",
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
                     }
                 }
             }

@@ -242,7 +242,16 @@ class DashboardViewModel @Inject constructor(
 
         val vin = authService.selectedVin
         if (vin != null && battery != null && rangeVal != null) {
-            wearableSyncManager.syncVehicleTelemetry(vin, battery, rangeVal, mainStatus, targetLevel, isPluggedIn)
+            wearableSyncManager.syncVehicleTelemetry(
+                vin,
+                battery,
+                rangeVal,
+                mainStatus,
+                targetLevel,
+                isPluggedIn,
+                authService.sessionManager.useCelsius,
+                authService.sessionManager.useKilometers
+            )
         }
     }
 
