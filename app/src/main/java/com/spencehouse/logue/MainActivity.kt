@@ -32,7 +32,7 @@ class MainActivity : ComponentActivity() {
             LogueTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
+                    color = MaterialTheme.colorScheme.background,
                 ) {
                     LogueAppNavigation(authService.isLoggedIn())
                 }
@@ -53,7 +53,7 @@ fun LogueAppNavigation(isLoggedIn: Boolean) {
                     navController.navigate("dashboard") {
                         popUpTo("login") { inclusive = true }
                     }
-                }
+                },
             )
         }
         composable("dashboard") {
@@ -62,7 +62,7 @@ fun LogueAppNavigation(isLoggedIn: Boolean) {
                     navController.navigate("login") {
                         popUpTo("dashboard") { inclusive = true }
                     }
-                }
+                },
             )
         }
     }

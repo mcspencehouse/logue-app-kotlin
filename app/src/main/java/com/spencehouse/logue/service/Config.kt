@@ -13,7 +13,7 @@ object Config {
         "hondaHeaderType.country_code" to "US",
         "hondaHeaderType.language_code" to "en",
         "hondaHeaderType.businessId" to "ACURA EV",
-        "User-Agent" to "okhttp/4.12.0"
+        "User-Agent" to "okhttp/4.12.0",
     )
 
     val DASHBOARD_FILTERS = listOf(
@@ -33,6 +33,6 @@ object Config {
         "CABIN PRECONDITIONING TEMP CUSTOM SETTING",
         "CHARGER POWER LEVEL",
         "HANDS FREE CALLING",
-        "ENERGY EFFICIENCY"
+        "ENERGY EFFICIENCY",
     )
 }

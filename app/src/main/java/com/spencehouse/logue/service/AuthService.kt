@@ -6,6 +6,7 @@ import com.spencehouse.logue.service.remote.IdentityApi
 import com.spencehouse.logue.service.remote.dto.TokenResponse
 import com.spencehouse.logue.service.remote.dto.Vehicle
 import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.seconds
 import retrofit2.Response
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -18,7 +19,7 @@ import javax.inject.Singleton
 class AuthService @Inject constructor(
     private val identityApi: IdentityApi,
     private val wscApi: HondaWscApi,
-    val sessionManager: SessionManager
+    val sessionManager: SessionManager,
 ) {
     private val tag = "AuthService"
     var vehicles: List<Vehicle> = emptyList()
@@ -62,7 +63,7 @@ class AuthService @Inject constructor(
                     break
                 }
                 Log.w(tag, "Token generation failed with code: ${tokenResp.code()}. Retrying in 1 second.")
-                delay(1000)
+                delay(1.seconds)
                 attempt++
             }
 
@@ -86,9 +87,10 @@ class AuthService @Inject constructor(
                 put("hondaHeaderType.systemId", "com.honda.dealer.cv_android")
                 put("hondaHeaderType.userId", sessionManager.hidasIdent!!)
                 put("hondaHeaderType.clientType", "Mobile")
-                put("hondaHeaderType.collectedTimeStamp", SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", Locale.US).format(
-                    Date()
-                ))
+                put(
+                    "hondaHeaderType.collectedTimeStamp",
+                    SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", Locale.US).format(Date()),
+                )
                 put("Content-Type", "application/json")
                 put("Accept", "application/json")
             }
@@ -139,6 +141,6 @@ class AuthService @Inject constructor(
     }
 
     fun isLoggedIn(): Boolean {
-        return sessionManager.username != null && sessionManager.password != null
+        return (sessionManager.username != null) && (sessionManager.password != null)
     }
 }

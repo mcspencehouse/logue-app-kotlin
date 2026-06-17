@@ -8,6 +8,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.serialization.SerialName
@@ -25,7 +26,7 @@ import kotlin.math.roundToInt
 
 data class DashboardData(
     val batteryPercentage: Int,
-    val range: Int
+    val range: Int,
 )
 
 @Serializable
@@ -86,19 +87,24 @@ class VehicleService @Inject constructor(
         val accessToken = sessionManager.accessToken ?: return Result.failure(Exception("No access token"))
         val hidasIdent = sessionManager.hidasIdent ?: return Result.failure(Exception("No HIDAS ident"))
 
-        return Result.success(Config.COMMON_HEADERS.toMutableMap().apply {
-            put("Authorization", "Bearer $accessToken")
-            put("hondaHeaderType.version", version)
-            put("hondaHeaderType.siteId", siteId)
-            put("hondaHeaderType.messageId", messageId)
-            put("hondaHeaderType.systemId", "com.honda.hondalink.cv_android")
-            put("hondaHeaderType.userId", hidasIdent)
-            put("hondaHeaderType.hidasId", hidasIdent)
-            put("hondaHeaderType.clientType", "Mobile")
-            put("hondaHeaderType.collectedTimeStamp", SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", Locale.US).format(Date()))
-            put("Content-Type", "application/json")
-            put("Accept", "application/json")
-        })
+        return Result.success(
+            Config.COMMON_HEADERS.toMutableMap().apply {
+                put("Authorization", "Bearer $accessToken")
+                put("hondaHeaderType.version", version)
+                put("hondaHeaderType.siteId", siteId)
+                put("hondaHeaderType.messageId", messageId)
+                put("hondaHeaderType.systemId", "com.honda.hondalink.cv_android")
+                put("hondaHeaderType.userId", hidasIdent)
+                put("hondaHeaderType.hidasId", hidasIdent)
+                put("hondaHeaderType.clientType", "Mobile")
+                put(
+                    "hondaHeaderType.collectedTimeStamp",
+                    SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", Locale.US).format(Date()),
+                )
+                put("Content-Type", "application/json")
+                put("Accept", "application/json")
+            },
+        )
     }
 
     @Suppress("unused")
@@ -125,21 +131,13 @@ class VehicleService @Inject constructor(
                     val voltage = evStatus.chargerVoltage?.toIntOrNull()
                     val isPluggedIn = evStatus.isPluggedIn == "1"
 
-                    if (batteryLevel != null) {
-                        sessionManager.cachedBatteryPercentage = batteryLevel
-                    }
-                    if (range != null) {
-                        sessionManager.cachedRange = range
-                    }
-                    if (voltage != null) {
-                        sessionManager.cachedVoltage = voltage
-                    }
-                    if (evStatus.chargingStatus != null) {
-                        sessionManager.cachedChargeStatus = evStatus.chargingStatus
-                    }
+                    batteryLevel?.let { sessionManager.cachedBatteryPercentage = it }
+                    range?.let { sessionManager.cachedRange = it }
+                    voltage?.let { sessionManager.cachedVoltage = it }
+                    evStatus.chargingStatus?.let { sessionManager.cachedChargeStatus = it }
                     sessionManager.cachedIsPluggedIn = isPluggedIn
 
-                    if (batteryLevel != null && range != null) {
+                    if ((batteryLevel != null) && (range != null)) {
                         val dashboardData = DashboardData(
                             batteryPercentage = batteryLevel,
                             range = range
@@ -204,7 +202,7 @@ class VehicleService @Inject constructor(
                     Log.e(tag, "Failed CIG Token request. Code: ${resp.code()}, Error: $errorBody")
                     if (resp.code() == 400 && attempt < 2) {
                         Log.d(tag, "Retrying after 1 second")
-                        delay(1000)
+                        delay(1.seconds)
                     } else {
                         return Result.failure(Exception("Failed to get CIG token: $errorBody"))
                     }

@@ -1,7 +1,6 @@
 package com.spencehouse.logue.widget
 
 import android.content.Context
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceId
@@ -18,12 +17,12 @@ import androidx.glance.layout.*
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
-import androidx.glance.unit.ColorProvider
 import com.spencehouse.logue.service.SessionManager
 import dagger.hilt.android.EntryPointAccessors
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
@@ -53,14 +52,14 @@ class ClimateWidget : GlanceAppWidget() {
                         .background(GlanceTheme.colors.surfaceVariant)
                         .padding(16.dp),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically, modifier = GlanceModifier.fillMaxWidth()) {
                         Image(
                             provider = ImageProvider(R.drawable.ic_thermostat),
                             contentDescription = "Climate",
                             colorFilter = ColorFilter.tint(GlanceTheme.colors.primary),
-                            modifier = GlanceModifier.size(16.dp)
+                            modifier = GlanceModifier.size(16.dp),
                         )
                         Spacer(modifier = GlanceModifier.width(8.dp))
                         Text(
@@ -212,7 +211,7 @@ class StartClimateAction : ActionCallback {
         
         // Poll for actual state change
         for (i in 0..5) { // Poll every 5s for 30s
-            kotlinx.coroutines.delay(5000)
+            kotlinx.coroutines.delay(5.seconds)
             try {
                 val statusResult = vehicleService.getClimateStatus(vin)
                 if (statusResult.isSuccess) {
@@ -259,7 +258,7 @@ class StopClimateAction : ActionCallback {
         
         // Poll for actual state change
         for (i in 0..5) { // Poll every 5s for 30s
-            kotlinx.coroutines.delay(5000)
+            kotlinx.coroutines.delay(5.seconds)
             try {
                 val statusResult = vehicleService.getClimateStatus(vin)
                 if (statusResult.isSuccess) {

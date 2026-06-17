@@ -1,7 +1,6 @@
 package com.spencehouse.logue.widget
 
 import android.content.Context
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceId
@@ -43,7 +42,7 @@ class CommandsWidget : GlanceAppWidget() {
                         .background(GlanceTheme.colors.surfaceVariant)
                         .padding(16.dp),
                     verticalAlignment = Alignment.Top,
-                    horizontalAlignment = Alignment.Start
+                    horizontalAlignment = Alignment.Start,
                 ) {
                     Text(
                         text = "EV REMOTE COMMANDS",

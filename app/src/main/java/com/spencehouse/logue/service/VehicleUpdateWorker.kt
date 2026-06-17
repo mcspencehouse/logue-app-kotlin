@@ -24,7 +24,7 @@ class VehicleUpdateWorker @AssistedInject constructor(
     @Assisted private val appContext: Context,
     @Assisted workerParams: WorkerParameters,
     private val authService: AuthService,
-    private val vehicleService: VehicleService
+    private val vehicleService: VehicleService,
 ) : CoroutineWorker(appContext, workerParams) {
 
     private val tag = "VehicleUpdateWorker"
@@ -52,7 +52,7 @@ class VehicleUpdateWorker @AssistedInject constructor(
                 
                 // Check if charging target is reached
                 val target = sessionManager.targetChargeLevel
-                if (newBattery >= target && oldBattery < target) {
+                if ((newBattery >= target) && (oldBattery < target)) {
                     sendChargeCompleteNotification(newBattery)
                 }
 

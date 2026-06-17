@@ -22,6 +22,8 @@ import androidx.glance.ImageProvider
 import androidx.glance.ColorFilter
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.action.actionRunCallback
+import androidx.core.graphics.createBitmap
+import androidx.core.graphics.toColorInt
 import com.spencehouse.logue.R
 
 class BatteryWidget : GlanceAppWidget() {
@@ -37,7 +39,7 @@ class BatteryWidget : GlanceAppWidget() {
             val batteryText = if (battery >= 0) "$battery%" else "--%"
             val rangeText = if (range >= 0) "$range miles" else "-- miles"
             val statusText = when {
-                isPluggedIn && voltage > 0 -> "$chargeStatus ${voltage}V"
+                (isPluggedIn) && (voltage > 0) -> "$chargeStatus ${voltage}V"
                 isPluggedIn -> "Plugged In"
                 else -> "Unplugged"
             }
@@ -49,7 +51,7 @@ class BatteryWidget : GlanceAppWidget() {
                         .background(GlanceTheme.colors.surface)
                         .padding(16.dp),
                     verticalAlignment = Alignment.Top,
-                    horizontalAlignment = Alignment.Start
+                    horizontalAlignment = Alignment.Start,
                 ) {
                     Row(
                         modifier = GlanceModifier.fillMaxWidth(),
@@ -159,15 +161,15 @@ fun createProgressBitmap(progress: Int, target: Int, context: Context): android.
     val size = 300
     val maxStroke = 34f
     val strokeWidth = 26f
-    val bitmap = android.graphics.Bitmap.createBitmap(size, size, android.graphics.Bitmap.Config.ARGB_8888)
+    val bitmap = createBitmap(size, size, android.graphics.Bitmap.Config.ARGB_8888)
     val canvas = android.graphics.Canvas(bitmap)
 
     val isDarkTheme = (context.resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES
     
     // Default Material 3 colors
-    var primaryColor = if (isDarkTheme) android.graphics.Color.parseColor("#D0BCFF") else android.graphics.Color.parseColor("#6750A4")
-    var surfaceVariantColor = if (isDarkTheme) android.graphics.Color.parseColor("#49454F") else android.graphics.Color.parseColor("#E7E0EC")
-    var onSurfaceColor = if (isDarkTheme) android.graphics.Color.parseColor("#E6E1E5") else android.graphics.Color.parseColor("#1C1B1F")
+    var primaryColor = if (isDarkTheme) "#D0BCFF".toColorInt() else "#6750A4".toColorInt()
+    var surfaceVariantColor = if (isDarkTheme) "#49454F".toColorInt() else "#E7E0EC".toColorInt()
+    var onSurfaceColor = if (isDarkTheme) "#E6E1E5".toColorInt() else "#1C1B1F".toColorInt()
 
     if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
         val primaryRes = if (isDarkTheme) android.R.color.system_accent1_200 else android.R.color.system_accent1_600

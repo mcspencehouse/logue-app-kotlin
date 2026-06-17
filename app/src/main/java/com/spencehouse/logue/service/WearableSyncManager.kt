@@ -10,7 +10,7 @@ import javax.inject.Singleton
 
 @Singleton
 class WearableSyncManager @Inject constructor(
-    @ApplicationContext private val context: Context
+    @param:ApplicationContext private val context: Context,
 ) {
     private val tag = "WearableSyncManager"
 
@@ -22,7 +22,7 @@ class WearableSyncManager @Inject constructor(
         targetLimit: Int,
         isPluggedIn: Boolean,
         useCelsius: Boolean,
-        useKilometers: Boolean
+        useKilometers: Boolean,
     ) {
         try {
             Log.d(tag, "Syncing telemetry to Wear OS - VIN: $vin, Battery: $batteryPercentage%, Range: $range miles, Status: $statusText, Target: $targetLimit%, Plugged: $isPluggedIn, Celsius: $useCelsius, KM: $useKilometers")

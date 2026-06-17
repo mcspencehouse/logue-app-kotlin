@@ -6,13 +6,13 @@ data class VehicleUiModel(
     val divisionName: String,
     val modelCode: String,
     val aliasName: String?,
-    val asset34FrontPath: String?
+    val asset34FrontPath: String?,
 )
 
 data class VehicleLocation(
     val latitude: Double,
     val longitude: Double,
-    val timestamp: Long
+    val timestamp: Long,
 )
 
 data class DashboardUiState(
@@ -41,5 +41,5 @@ data class DashboardUiState(
     val isFlashing: Boolean = false,
     val isHonking: Boolean = false,
     val vehicleLocation: VehicleLocation? = null,
-    val vehicleLocationError: String? = null
+    val vehicleLocationError: String? = null,
 )

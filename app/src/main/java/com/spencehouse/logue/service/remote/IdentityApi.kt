@@ -10,12 +10,12 @@ interface IdentityApi {
     @FormUrlEncoded
     @POST("hidas/rs/client/register")
     suspend fun registerClient(
-        @FieldMap data: Map<String, String>
+        @FieldMap data: Map<String, String>,
     ): Response<ClientRegistrationResponse>
 
     @FormUrlEncoded
     @POST("hidas/rs/token/generate")
     suspend fun generateToken(
-        @FieldMap data: Map<String, String>
+        @FieldMap data: Map<String, String>,
     ): Response<TokenResponse>
 }

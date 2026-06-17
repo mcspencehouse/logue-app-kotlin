@@ -44,7 +44,7 @@ class LogueApp : Application(), Configuration.Provider {
         workManager.enqueueUniquePeriodicWork(
             "VehicleUpdateWork",
             ExistingPeriodicWorkPolicy.KEEP,
-            request
+            request,
         )
     }
 
@@ -53,7 +53,7 @@ class LogueApp : Application(), Configuration.Provider {
             val statusChannel = NotificationChannel(
                 "vehicle_status",
                 "Vehicle Status",
-                NotificationManager.IMPORTANCE_DEFAULT
+                NotificationManager.IMPORTANCE_DEFAULT,
             ).apply {
                 description = "Notifications for vehicle charging and other statuses"
             }
@@ -61,7 +61,7 @@ class LogueApp : Application(), Configuration.Provider {
             val climateChannel = NotificationChannel(
                 "climate_control",
                 "Climate Control",
-                NotificationManager.IMPORTANCE_LOW
+                NotificationManager.IMPORTANCE_LOW,
             ).apply {
                 description = "Persistent notification while climate control is running"
             }

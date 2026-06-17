@@ -19,6 +19,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.cancel
+import kotlin.time.Duration.Companion.seconds
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import org.json.JSONObject
@@ -30,10 +31,10 @@ import javax.inject.Inject
 
 @HiltViewModel
 class DashboardViewModel @Inject constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
     private val authService: AuthService,
     private val vehicleService: VehicleService,
-    private val wearableSyncManager: WearableSyncManager
+    private val wearableSyncManager: WearableSyncManager,
 ) : ViewModel() {
 
     private val tag = "DashboardViewModel"
@@ -45,7 +46,7 @@ class DashboardViewModel @Inject constructor(
     private var carFinderPollingJob: Job? = null
     private var carLocationPollingJob: Job? = null
 
-    var isRefreshing by mutableStateOf(false)
+    var isRefreshing by mutableStateOf(value = false)
         private set
 
     init {
@@ -64,7 +65,7 @@ class DashboardViewModel @Inject constructor(
                     divisionName = it.divisionName,
                     modelCode = it.modelCode,
                     aliasName = it.aliasName,
-                    asset34FrontPath = it.asset34FrontPath
+                    asset34FrontPath = it.asset34FrontPath,
                 )
             }
             Log.d(tag, "Mapped vehicles in init: $mappedVehicles")
@@ -78,13 +79,13 @@ class DashboardViewModel @Inject constructor(
                 useCelsius = authService.sessionManager.useCelsius,
                 useKilometers = authService.sessionManager.useKilometers,
                 useKpa = authService.sessionManager.useKpa,
-                savedPin = authService.sessionManager.pin
+                savedPin = authService.sessionManager.pin,
             )
 
             if (isEv) {
                 connectMqtt()
             } else {
-                updateStatus("Not an EV")
+                updateStatus("Not an EV. OnStar must be active.")
             }
         }
         startAutoRefresh()
@@ -97,7 +98,7 @@ class DashboardViewModel @Inject constructor(
 
     private fun connectMqtt() {
         val vin = authService.selectedVin
-        if (vin == null || !uiState.isEv) return
+        if ((vin == null) || (!uiState.isEv)) return
 
         viewModelScope.launch {
             try {
@@ -110,7 +111,7 @@ class DashboardViewModel @Inject constructor(
                     if (errorMsg.contains("Unable to resolve host")) {
                         updateStatus("Network Error. Check connection.")
                     } else if (errorMsg.contains("scope is invalid")) {
-                        updateStatus("Not an EV")
+                        updateStatus("Not an EV. OnStar must be active.")
                     } else {
                         updateStatus("Auth Error: $errorMsg")
                     }
@@ -133,11 +134,10 @@ class DashboardViewModel @Inject constructor(
                         updateStatus("Connected")
                         refreshData()
                     },
-                    onError = { error ->
-                        Log.e(tag, "MQTT Client Error: $error")
-                        updateStatus("Connection Error: $error")
-                    }
-                )
+                ) { error ->
+                    Log.e(tag, "MQTT Client Error: $error")
+                    updateStatus("Connection Error: $error")
+                }
                 mqttClient?.connect()
             } catch (e: Exception) {
                 Log.e(tag, "connectMqtt exception", e)
@@ -176,9 +176,9 @@ class DashboardViewModel @Inject constructor(
         val longitude = coordinate?.optDouble("longitude") ?: Double.NaN
         val timestamp = data.optLong("timestamp", System.currentTimeMillis() / 1000)
 
-        if (!latitude.isNaN() && !longitude.isNaN() && latitude != 0.0 && longitude != 0.0) {
+        if ((!latitude.isNaN()) && (!longitude.isNaN()) && (latitude != 0.0) && (longitude != 0.0)) {
             uiState = uiState.copy(
-                vehicleLocation = VehicleLocation(latitude, longitude, timestamp)
+                vehicleLocation = VehicleLocation(latitude, longitude, timestamp),
             )
         }
     }
@@ -216,7 +216,7 @@ class DashboardViewModel @Inject constructor(
 
         val targetLevel = chargeMode?.optJSONObject("generalAwayTargetChargeLevel")?.optInt("value") ?: 80
 
-        val isPluggedIn = plugStatus?.lowercase() == "plugged" || chargeStatus?.lowercase() == "charging"
+        val isPluggedIn = (plugStatus?.lowercase() == "plugged") || (chargeStatus?.lowercase() == "charging")
 
         val (mainStatus, voltage) = formatChargeStatus(chargeStatus, plugStatus, chargeModeValue)
 
@@ -241,7 +241,7 @@ class DashboardViewModel @Inject constructor(
         )
 
         val vin = authService.selectedVin
-        if (vin != null && battery != null && rangeVal != null) {
+        if ((vin != null) && (battery != null) && (rangeVal != null)) {
             wearableSyncManager.syncVehicleTelemetry(
                 vin,
                 battery,
@@ -272,7 +272,7 @@ class DashboardViewModel @Inject constructor(
         if (hour == null || minute == null) return null
 
         val calendar = Calendar.getInstance()
-        val currentDay = calendar.get(Calendar.DAY_OF_WEEK)
+        val currentDay = calendar[Calendar.DAY_OF_WEEK]
 
         val dayOfWeekMap = mapOf(
             "Sunday" to 1, "Monday" to 2, "Tuesday" to 3, "Wednesday" to 4,
@@ -283,9 +283,9 @@ class DashboardViewModel @Inject constructor(
         val daysToAdd = (targetDay - currentDay + 7) % 7
 
         calendar.add(Calendar.DAY_OF_YEAR, daysToAdd)
-        calendar.set(Calendar.HOUR_OF_DAY, hour)
-        calendar.set(Calendar.MINUTE, minute)
-        calendar.set(Calendar.SECOND, 0)
+        calendar[Calendar.HOUR_OF_DAY] = hour
+        calendar[Calendar.MINUTE] = minute
+        calendar[Calendar.SECOND] = 0
 
         // If the calculated time is in the past (and it's the same day), assume it's for the next week
         if (daysToAdd == 0 && calendar.timeInMillis < System.currentTimeMillis()) {
@@ -300,7 +300,7 @@ class DashboardViewModel @Inject constructor(
         val status = chargeStatus?.lowercase()
         val pStatus = plugStatus?.lowercase()
 
-        val isPluggedIn = pStatus == "plugged" || status == "charging"
+        val isPluggedIn = (pStatus == "plugged") || (status == "charging")
 
         if (!isPluggedIn) {
             return "Unplugged" to null
@@ -354,14 +354,14 @@ class DashboardViewModel @Inject constructor(
                     if (errorMsg.contains("Unable to resolve host")) {
                         updateStatus("Network Error. Check connection.")
                     } else if (errorMsg.contains("scope is invalid")) {
-                        updateStatus("Not an EV")
+                        updateStatus("Not an EV. OnStar must be active.")
                         uiState = uiState.copy(isEv = false)
                     } else {
                         updateStatus("Refresh failed: $errorMsg")
                     }
                 }
             } else {
-                updateStatus("Not an EV")
+                updateStatus("Not an EV. OnStar must be active.")
             }
 
             val climateResult = vehicleService.getClimateStatus(vin)
@@ -400,7 +400,7 @@ class DashboardViewModel @Inject constructor(
         refreshJob?.cancel()
         refreshJob = viewModelScope.launch {
             while (isActive) {
-                delay(60000)
+                delay(60.seconds)
                 Log.d(tag, "Auto-refreshing data")
                 refreshData()
             }
@@ -454,7 +454,7 @@ class DashboardViewModel @Inject constructor(
             isEv = isEv,
             batteryPercentage = null,
             range = null,
-            statusText = if (isEv) "Switching vehicles..." else "Not an EV",
+            statusText = if (isEv) "Switching vehicles..." else "Not an EV. OnStar must be active.",
             vehicles = mappedVehicles
         )
 
@@ -501,9 +501,11 @@ class DashboardViewModel @Inject constructor(
 
     fun requestVehicleLocation(pin: String) {
         viewModelScope.launch {
-            val result = sendCommand("Vehicle Location", { p ->
-                vehicleService.requestVehicleLocation(authService.selectedVin!!, p)
-            }, pin)
+            val result = sendCommand(
+                "Vehicle Location",
+                { p -> vehicleService.requestVehicleLocation(authService.selectedVin!!, p) },
+                pin
+            )
             result.onSuccess {
                 startCarLocationPolling()
             }.onFailure {
@@ -527,7 +529,7 @@ class DashboardViewModel @Inject constructor(
                     cancel()
                     return@launch
                 }
-                delay(5000)
+                delay(5.seconds)
                 refreshData()
             }
             Log.w(tag, "Car location polling timed out")
@@ -573,7 +575,7 @@ class DashboardViewModel @Inject constructor(
                     cancel()
                     return@launch
                 }
-                delay(5000) // Increased delay
+                delay(5.seconds) // Increased delay
                 refreshData() // Actively refresh data
             }
             Log.w(tag, "Car finder polling timed out")
@@ -607,13 +609,19 @@ class DashboardViewModel @Inject constructor(
         }
     }
 
-    fun startClimate(pin: String, temp: Int) = sendCommandWithPolling("Start Climate", { p ->
-        vehicleService.startClimate(authService.selectedVin!!, p, temp)
-    }, pin, "ON")
+    fun startClimate(pin: String, temp: Int) = sendCommandWithPolling(
+        "Start Climate",
+        { p -> vehicleService.startClimate(authService.selectedVin!!, p, temp) },
+        pin,
+        "ON"
+    )
 
-    fun stopClimate(pin: String) = sendCommandWithPolling("Stop Climate", { p ->
-        vehicleService.stopClimate(authService.selectedVin!!, p)
-    }, pin, "OFF")
+    fun stopClimate(pin: String) = sendCommandWithPolling(
+        "Stop Climate",
+        { p -> vehicleService.stopClimate(authService.selectedVin!!, p) },
+        pin,
+        "OFF"
+    )
 
     fun toggleFlashLights(pin: String) {
         if (uiState.isFlashing) {
@@ -633,23 +641,30 @@ class DashboardViewModel @Inject constructor(
 
     fun flashLights(pin: String) {
         uiState = uiState.copy(isFlashing = true)
-        sendCarFinderCommand("Flash Lights", { p ->
-            vehicleService.requestLightHorn(authService.selectedVin!!, p, "lgt")
-        }, pin)
+        sendCarFinderCommand(
+            "Flash Lights",
+            { p -> vehicleService.requestLightHorn(authService.selectedVin!!, p, "lgt") },
+            pin
+        )
     }
 
     fun soundHorn(pin: String) {
         uiState = uiState.copy(isHonking = true)
-        sendCarFinderCommand("Sound Horn", { p ->
-            vehicleService.requestLightHorn(authService.selectedVin!!, p, "hrn")
-        }, pin)
+        sendCarFinderCommand(
+            "Sound Horn",
+            { p -> vehicleService.requestLightHorn(authService.selectedVin!!, p, "hrn") },
+            pin
+        )
     }
 
     fun stopFlashAndHorn(pin: String) {
         uiState = uiState.copy(isFlashing = false, isHonking = false)
-        sendCarFinderCommand("Stop Flash and Horn", { p ->
-            vehicleService.requestStopLightHorn(authService.selectedVin!!, p)
-        }, pin, true)
+        sendCarFinderCommand(
+            "Stop Flash and Horn",
+            { p -> vehicleService.requestStopLightHorn(authService.selectedVin!!, p) },
+            pin,
+            targetIsOff = true
+        )
     }
 
     fun lockDoors(pin: String) {
@@ -687,7 +702,7 @@ class DashboardViewModel @Inject constructor(
                     updateStatus("Climate is ${targetStatus.lowercase()}.")
                     cancel()
                 }
-                delay(5000)
+                delay(5.seconds)
                 refreshData()
             }
         }

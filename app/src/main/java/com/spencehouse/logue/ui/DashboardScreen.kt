@@ -210,6 +210,13 @@ fun DashboardScreen(
                             textAlign = TextAlign.Center,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = "Note: OnStar must also be activated for vehicle integration.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            textAlign = TextAlign.Center,
+                            color = MaterialTheme.colorScheme.primary
+                        )
                     }
                 }
             } else {
