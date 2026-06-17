@@ -2,6 +2,8 @@ package com.spencehouse.logue.wear.service
 
 import android.content.Context
 import android.util.Log
+import android.graphics.drawable.Icon
+import com.spencehouse.logue.wear.R
 import androidx.wear.watchface.complications.data.*
 import androidx.wear.watchface.complications.datasource.ComplicationDataSourceService
 import androidx.wear.watchface.complications.datasource.ComplicationRequest
@@ -39,6 +41,10 @@ class BatteryComplicationService : ComplicationDataSourceService() {
         val plainTitle = PlainComplicationText.Builder(titleStr).build()
         val desc = PlainComplicationText.Builder("Vehicle battery charge level").build()
 
+        val carIcon = MonochromaticImage.Builder(
+            image = Icon.createWithResource(this, R.drawable.ic_car)
+        ).build()
+
         return when (type) {
             ComplicationType.RANGED_VALUE -> {
                 val valueVal = if (hasData) batteryPct.toFloat() else 0f
@@ -50,6 +56,7 @@ class BatteryComplicationService : ComplicationDataSourceService() {
                 )
                 .setText(plainText)
                 .setTitle(plainTitle)
+                .setMonochromaticImage(carIcon)
                 .build()
             }
             ComplicationType.SHORT_TEXT -> {
@@ -58,6 +65,7 @@ class BatteryComplicationService : ComplicationDataSourceService() {
                     contentDescription = desc
                 )
                 .setTitle(plainTitle)
+                .setMonochromaticImage(carIcon)
                 .build()
             }
             else -> {
@@ -65,7 +73,9 @@ class BatteryComplicationService : ComplicationDataSourceService() {
                 ShortTextComplicationData.Builder(
                     text = plainText,
                     contentDescription = desc
-                ).build()
+                )
+                .setMonochromaticImage(carIcon)
+                .build()
             }
         }
     }
