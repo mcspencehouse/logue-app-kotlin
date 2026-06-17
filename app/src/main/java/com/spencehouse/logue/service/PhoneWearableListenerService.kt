@@ -20,6 +20,7 @@ class PhoneWearableListenerService : WearableListenerService() {
     interface PhoneWearableEntryPoint {
         fun vehicleService(): VehicleService
         fun authService(): AuthService
+        fun wearableSyncManager(): WearableSyncManager
     }
 
     override fun onMessageReceived(messageEvent: MessageEvent) {
@@ -31,6 +32,32 @@ class PhoneWearableListenerService : WearableListenerService() {
         )
         val vehicleService = entryPoint.vehicleService()
         val authService = entryPoint.authService()
+
+        val path = messageEvent.path
+        if (path == "/request/telemetry") {
+            serviceScope.launch {
+                try {
+                    val wearableSyncManager = entryPoint.wearableSyncManager()
+                    val sessionManager = authService.sessionManager
+                    val cachedVin = authService.selectedVin ?: sessionManager.vin
+                    val cachedBattery = sessionManager.cachedBatteryPercentage
+                    val cachedRange = sessionManager.cachedRange
+                    val cachedStatus = sessionManager.cachedChargeStatus ?: "Unknown"
+                    val targetLimit = sessionManager.targetChargeLevel
+                    val isPluggedIn = sessionManager.cachedIsPluggedIn
+                    
+                    if (!cachedVin.isNullOrEmpty() && cachedBattery >= 0 && cachedRange >= 0) {
+                        Log.i(tag, "Sending cached telemetry on request: Battery $cachedBattery%, Range $cachedRange, Target $targetLimit, Plugged $isPluggedIn")
+                        wearableSyncManager.syncVehicleTelemetry(cachedVin, cachedBattery, cachedRange, cachedStatus, targetLimit, isPluggedIn)
+                    } else {
+                        Log.w(tag, "No cached telemetry available to sync")
+                    }
+                } catch (e: Exception) {
+                    Log.e(tag, "Error handling Wear OS telemetry request", e)
+                }
+            }
+            return
+        }
 
         val vin = authService.selectedVin
         if (vin.isNullOrEmpty()) {

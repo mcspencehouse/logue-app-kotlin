@@ -18,10 +18,12 @@ class WearableSyncManager @Inject constructor(
         vin: String,
         batteryPercentage: Int,
         range: Int,
-        statusText: String
+        statusText: String,
+        targetLimit: Int,
+        isPluggedIn: Boolean
     ) {
         try {
-            Log.d(tag, "Syncing telemetry to Wear OS - VIN: $vin, Battery: $batteryPercentage%, Range: $range miles, Status: $statusText")
+            Log.d(tag, "Syncing telemetry to Wear OS - VIN: $vin, Battery: $batteryPercentage%, Range: $range miles, Status: $statusText, Target: $targetLimit%, Plugged: $isPluggedIn")
             
             val dataClient = Wearable.getDataClient(context)
             val putDataMapReq = PutDataMapRequest.create("/vehicle/telemetry").apply {
@@ -29,6 +31,8 @@ class WearableSyncManager @Inject constructor(
                 dataMap.putInt("batteryPercentage", batteryPercentage)
                 dataMap.putInt("range", range)
                 dataMap.putString("statusText", statusText)
+                dataMap.putInt("targetLimit", targetLimit)
+                dataMap.putBoolean("isPluggedIn", isPluggedIn)
                 dataMap.putLong("timestamp", System.currentTimeMillis())
             }
             
