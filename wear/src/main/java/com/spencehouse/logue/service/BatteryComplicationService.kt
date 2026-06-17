@@ -1,4 +1,4 @@
-package com.spencehouse.logue.service
+package com.spencehouse.logue.wear.service
 
 import android.content.Context
 import android.util.Log

@@ -1,4 +1,4 @@
-package com.spencehouse.logue
+package com.spencehouse.logue.wear
 
 import android.content.Context
 import android.content.SharedPreferences
