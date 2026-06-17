@@ -251,7 +251,8 @@ fun WearApp(
                     }
                 }
 
-                item { Spacer(modifier = Modifier.height(8.dp)) }
+                // Large spacer to push remote commands off-screen on startup
+                item { Spacer(modifier = Modifier.height(100.dp)) }
 
                 // Remote Command: Lock / Unlock
                 item {
