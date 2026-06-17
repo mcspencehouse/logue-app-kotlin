@@ -66,6 +66,8 @@ class AwsMqttClient(
                     // Subscribe to shadow accepted topics
                     subscribe("\$aws/things/thing_$vin/shadow/name/DASHBOARD_ASYNC/update/accepted")
                     subscribe("\$aws/things/thing_$vin/shadow/name/ENGINE_START_STOP_ASYNC/update/accepted")
+                    subscribe("\$aws/things/thing_$vin/shadow/name/CARFINDER_LOCATION_ASYNC/update/accepted")
+                    subscribe("\$aws/things/thing_$vin/shadow/name/CARFINDER_HORN_LIGHT_ASYNC/update/accepted")
                     
                     onConnected()
                 }
