@@ -1,0 +1,237 @@
+{
+    "timestamp": "2026-02-19T02:48:52Z",
+    "tireStatus": {
+        "frontRight": {
+            "pressureData": {
+                "value": "280",
+                "unit": "kPa"
+            },
+            "warningState": {
+                "value": "OFF"
+            }
+        },
+        "frontLeft": {
+            "pressureData": {
+                "value": "280",
+                "unit": "kPa"
+            },
+            "warningState": {
+                "value": "OFF"
+            }
+        },
+        "rearRight": {
+            "pressureData": {
+                "value": "280",
+                "unit": "kPa"
+            },
+            "warningState": {
+                "value": "OFF"
+            }
+        },
+        "rearLeft": {
+            "pressureData": {
+                "value": "284",
+                "unit": "kPa"
+            },
+            "warningState": {
+                "value": "OFF"
+            }
+        },
+        "placardFront": {
+            "pressureData": {
+                "value": "290",
+                "unit": "kPa"
+            },
+            "warningState": {
+                "value": "unknown"
+            }
+        },
+        "placardRear": {
+            "pressureData": {
+                "value": "290",
+                "unit": "kPa"
+            },
+            "warningState": {
+                "value": "unknown"
+            }
+        }
+    },
+    "evStatus": {
+        "soc": "79.7",
+        "evRange": "236.0",
+        "chargeStatus": "charging",
+        "chargeMode": "120",
+        "plugStatus": "plugged"
+    },
+    "odometer": {
+        "value": "171",
+        "unit": "Miles"
+    },
+    "warningLamps": {
+        "data": [
+            {
+                "languageCode": "en",
+                "messages": []
+            }
+        ]
+    },
+    "highVoltageBatteryPreconditioningStatus": {
+        "unit": "N/A",
+        "value": "DISABLED",
+        "message": "na",
+        "status": "NA"
+    },
+    "chargerPowerLevel": {
+        "unit": "N/A",
+        "value": "120",
+        "message": "na",
+        "status": "NA"
+    },
+    "locBasedChargingCurrentSetting": {
+        "unit": "",
+        "value": "",
+        "message": "",
+        "status": ""
+    },
+    "hvChargeLimitedReason": {
+        "value": "No_Action",
+        "message": "na",
+        "status": "NA"
+    },
+    "locationBaseCharge": {
+        "value": "Off",
+        "message": "na",
+        "status": "NA"
+    },
+    "estRangePerTCL": {
+        "unit": "Miles",
+        "value": "237",
+        "message": "na",
+        "status": "NA"
+    },
+    "homeLocIsStored": {
+        "unit": "N/A",
+        "value": "FALSE",
+        "message": "na",
+        "status": "NA"
+    },
+    "getChargeMode": {
+        "chargeModeType": {
+            "value": "CHARGE_NOW",
+            "message": "na",
+            "status": "NA"
+        },
+        "chargingDayOfWeek": {
+            "value": "Saturday",
+            "message": "na",
+            "status": "NA"
+        },
+        "chargeHourOfDay": {
+            "value": "0",
+            "message": "na",
+            "status": "NA"
+        },
+        "chargeMinuteOfHour": {
+            "value": "0",
+            "message": "na",
+            "status": "NA"
+        },
+        "cabinPrecondRequest": {
+            "value": "OFF",
+            "message": "na",
+            "status": "NA"
+        },
+        "generalAwayTargetChargeLevel": {
+            "unit": "%",
+            "value": "80",
+            "message": "na",
+            "status": "NA"
+        }
+    },
+    "targetChargeLevelSettings": {
+        "locBasedChargingHomeLocStored": {
+            "unit": "N/A",
+            "value": "FALSE",
+            "message": "na",
+            "status": "NA"
+        },
+        "vehInHomeLocation": {
+            "unit": "N/A",
+            "value": "FALSE",
+            "message": "na",
+            "status": "NA"
+        },
+        "vehNotInHomeLoc": {
+            "unit": "N/A",
+            "value": "TRUE",
+            "message": "na",
+            "status": "NA"
+        },
+        "vehLocationStatusInvalid": {
+            "unit": "N/A",
+            "value": "FALSE",
+            "message": "na",
+            "status": "NA"
+        },
+        "projectedEVRangeGeneralAwayTargetChargeSet": {
+            "unit": "Miles",
+            "value": "237",
+            "message": "na",
+            "status": "NA"
+        }
+    },
+    "hvBatteryChargeCompleteTime": {
+        "hvBatteryChargeCompleteDay": {
+            "unit": "Day",
+            "value": "Wednesday",
+            "message": "na",
+            "status": "NA"
+        },
+        "hvBatteryChargeCompleteHour": {
+            "unit": "Hour",
+            "value": "21",
+            "message": "na",
+            "status": "NA"
+        },
+        "hvBatteryChargeCompleteMinute": {
+            "unit": "Min",
+            "value": "45",
+            "message": "na",
+            "status": "NA"
+        },
+        "hvBatteryChargePowerLevel": {
+            "unit": "",
+            "value": "",
+            "message": "",
+            "status": ""
+        }
+    },
+    "energyEfficiency": {
+        "lifeTimeEfficiency": {
+            "unit": "",
+            "value": "",
+            "message": "",
+            "status": ""
+        },
+        "odometer": {
+            "unit": "",
+            "value": "",
+            "message": "",
+            "status": ""
+        }
+    },
+    "lastTripFuelEconomy": {},
+    "cabinPreconditioningTempCustomSetting": {
+        "scheduledCabinPreconditionCustomSetValue": {
+            "unit": "Cel",
+            "value": "4.0",
+            "message": "na"
+        }
+    },
+    "commuteScheduleCustStatus": {
+        "value": "False",
+        "message": "na",
+        "status": "NA"
+    },
+    "commuteScheduleEnabled": []
+}

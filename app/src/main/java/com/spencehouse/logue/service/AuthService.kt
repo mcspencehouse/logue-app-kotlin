@@ -22,7 +22,7 @@ class AuthService @Inject constructor(
 ) {
     private val tag = "AuthService"
     var vehicles: List<Vehicle> = emptyList()
-    var selectedVin: String? = null
+    var selectedVin: String? = sessionManager.vin
 
     suspend fun login(username: String? = null, password: String? = null, vin: String? = null): Result<Unit> {
         val finalUsername = username ?: sessionManager.username

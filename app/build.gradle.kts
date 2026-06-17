@@ -56,6 +56,7 @@ dependencies {
     implementation(libs.androidx.security.crypto)
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.compose.material.icons.extended)
+    implementation(libs.maps.compose)
 
     // Image
     implementation(libs.coilCompose)

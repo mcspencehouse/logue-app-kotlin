@@ -66,7 +66,7 @@ private data class ErrorResponse(
 
 @Serializable
 private data class ErrorResponseBody(
-    @SerialName("cigServiceRequestld")
+    @SerialName("cigServiceRequestId")
     val cigServiceRequestId: String?,
     val errorCode: String,
     val errorMessage: String
@@ -419,6 +419,39 @@ class VehicleService @Inject constructor(
             }
         } catch (e: Exception) {
             Log.e(tag, "Exception during getClimateStatus", e)
+            Result.failure(e)
+        }
+    }
+
+    suspend fun requestVehicleLocation(vin: String, pin: String): Result<String?> {
+        val tag = "VehicleService.VehicleLocation"
+        return try {
+            Log.d(tag, "Requesting vehicle location for VIN: $vin")
+            val headers = getHeaders(siteId = "18d216af12884813987e6b7f75a005a1", messageId = "S-1").getOrElse {
+                return Result.failure(it)
+            }
+            val resp = wscApi.requestVehicleLocation("cfl", headers, RemoteCommandRequest(vin, pin))
+            val body = resp.body()
+            if (resp.isSuccessful && (body?.status == "success" || body?.status == "IN_PROGRESS")) {
+                Log.d(tag, "Successfully requested vehicle location. CIG Request ID: ${body.responseBody?.cigServiceRequestId}")
+                Result.success(body.responseBody?.cigServiceRequestId)
+            } else {
+                val errorBody = resp.errorBody()?.string()
+                Log.e(tag, "Failed vehicle location request. Code: ${resp.code()}, Error: $errorBody")
+                if (errorBody != null) {
+                    try {
+                        val error = json.decodeFromString<ErrorResponse>(errorBody)
+                        if (error.responseBody.errorCode == "0001-01-2026") {
+                            return Result.failure(Exception(error.responseBody.errorMessage))
+                        }
+                    } catch (e: Exception) {
+                        Log.w(tag, "Could not parse error body", e)
+                    }
+                }
+                Result.failure(Exception("Vehicle location failed: $errorBody"))
+            }
+        } catch (e: Exception) {
+            Log.e(tag, "Exception during requestVehicleLocation", e)
             Result.failure(e)
         }
     }

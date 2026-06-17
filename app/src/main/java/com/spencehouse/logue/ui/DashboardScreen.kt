@@ -34,10 +34,17 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.MarkerState
+import com.google.maps.android.compose.rememberCameraPositionState
 import com.spencehouse.logue.BuildConfig
 import com.spencehouse.logue.R
 import com.spencehouse.logue.di.ImageLoaderEntryPoint
 import com.spencehouse.logue.ui.model.DashboardViewModel
+import com.spencehouse.logue.ui.model.VehicleLocation
 import dagger.hilt.android.EntryPointAccessors
 import kotlin.math.cos
 import kotlin.math.sin
@@ -277,6 +284,21 @@ fun DashboardScreen(
                             },
                             onStop = {
                                 executeOrShowPin("Stop Climate") { pin -> viewModel.stopClimate(pin) }
+                            }
+                        )
+                    }
+
+                    // Vehicle Location
+                    item {
+                        VehicleLocationCard(
+                            vehicleLocation = uiState.vehicleLocation,
+                            vehicleLocationError = uiState.vehicleLocationError,
+                            onFindVehicle = {
+                                executeOrShowPin("Find Vehicle") { pin ->
+                                    viewModel.requestVehicleLocation(
+                                        pin
+                                    )
+                                }
                             }
                         )
                     }
@@ -589,6 +611,68 @@ fun ClimateControl(status: String, useCelsius: Boolean, onStart: (Int) -> Unit, 
                 Icon(Icons.Default.PowerSettingsNew, contentDescription = null)
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(if (isOn) "STOP CLIMATE" else "START CLIMATE")
+            }
+        }
+    }
+}
+
+@Composable
+fun VehicleLocationCard(
+    vehicleLocation: VehicleLocation?,
+    vehicleLocationError: String?,
+    onFindVehicle: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(Icons.Default.LocationOn, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("VEHICLE LOCATION", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            if (vehicleLocation != null) {
+                val vehicleLatLng = LatLng(vehicleLocation.latitude, vehicleLocation.longitude)
+                val cameraPositionState = rememberCameraPositionState {
+                    position = CameraPosition.fromLatLngZoom(vehicleLatLng, 15f)
+                }
+
+                GoogleMap(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)
+                        .clip(MaterialTheme.shapes.medium),
+                    cameraPositionState = cameraPositionState
+                ) {
+                    Marker(
+                        state = remember { MarkerState(position = vehicleLatLng) },
+                        title = "Vehicle Location"
+                    )
+                }
+            } else {
+                if (vehicleLocationError != null) {
+                    Text(
+                        text = vehicleLocationError,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.error,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(16.dp)
+                    )
+                } else {
+                    Button(
+                        onClick = onFindVehicle,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(Icons.Default.Search, contentDescription = null)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("FIND VEHICLE")
+                    }
+                }
             }
         }
     }

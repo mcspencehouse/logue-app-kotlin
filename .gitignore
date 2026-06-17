@@ -67,3 +67,7 @@ build/
 .idea/shelf/
 .idea/modules.xml
 .idea/navEditor.xml
+
+# Release builds
+/app/release/
+

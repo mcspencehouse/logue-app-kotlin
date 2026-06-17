@@ -42,3 +42,7 @@
 -keep public interface org.eclipse.paho.client.mqttv3.MqttCallback { *; }
 
 -dontwarn org.eclipse.paho.client.mqttv3.**
+
+# Jetpack Glance Widgets
+-keep class com.spencehouse.logue.widget.** { *; }
+

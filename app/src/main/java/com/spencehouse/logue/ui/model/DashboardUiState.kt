@@ -9,6 +9,12 @@ data class VehicleUiModel(
     val asset34FrontPath: String?
 )
 
+data class VehicleLocation(
+    val latitude: Double,
+    val longitude: Double,
+    val timestamp: Long
+)
+
 data class DashboardUiState(
     val vehicleName: String = "",
     val vehicles: List<VehicleUiModel> = emptyList(),
@@ -33,5 +39,7 @@ data class DashboardUiState(
     val error: String? = null,
     val savedPin: String? = null,
     val isFlashing: Boolean = false,
-    val isHonking: Boolean = false
+    val isHonking: Boolean = false,
+    val vehicleLocation: VehicleLocation? = null,
+    val vehicleLocationError: String? = null
 )

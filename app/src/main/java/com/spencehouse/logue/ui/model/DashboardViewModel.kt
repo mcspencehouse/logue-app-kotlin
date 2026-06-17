@@ -41,6 +41,7 @@ class DashboardViewModel @Inject constructor(
     private var mqttClient: AwsMqttClient? = null
     private var refreshJob: Job? = null
     private var carFinderPollingJob: Job? = null
+    private var carLocationPollingJob: Job? = null
 
     var isRefreshing by mutableStateOf(false)
         private set
@@ -153,9 +154,27 @@ class DashboardViewModel @Inject constructor(
                 Log.d(tag, "Engine start/stop update received")
             } else if (topic.contains("CARFINDER_HORN_LIGHT_ASYNC")) {
                 updateCarFinderUi(json)
+            } else if (topic.contains("CARFINDER_LOCATION_ASYNC")) {
+                updateVehicleLocationUi(json)
             }
         } catch (e: Exception) {
             Log.e(tag, "Error parsing MQTT message", e)
+        }
+    }
+
+    private fun updateVehicleLocationUi(data: JSONObject) {
+        val reported = data.optJSONObject("state")?.optJSONObject("reported") ?: return
+        val rb = reported.optJSONObject("responseBody") ?: return
+
+        Log.d(tag, "Updating UI with reported vehicle location data")
+        val latitude = rb.optDouble("latitude")
+        val longitude = rb.optDouble("longitude")
+        val timestamp = rb.optLong("timestamp")
+
+        if (latitude != 0.0 && longitude != 0.0) {
+            uiState = uiState.copy(
+                vehicleLocation = VehicleLocation(latitude, longitude, timestamp)
+            )
         }
     }
 
@@ -461,6 +480,42 @@ class DashboardViewModel @Inject constructor(
         return result
     }
 
+    fun requestVehicleLocation(pin: String) {
+        viewModelScope.launch {
+            val result = sendCommand("Vehicle Location", { p ->
+                vehicleService.requestVehicleLocation(authService.selectedVin!!, p)
+            }, pin)
+            result.onSuccess {
+                startCarLocationPolling()
+            }.onFailure {
+                uiState = uiState.copy(vehicleLocationError = it.message)
+            }
+        }
+    }
+
+    private fun startCarLocationPolling() {
+        carLocationPollingJob?.cancel()
+        carLocationPollingJob = viewModelScope.launch {
+            uiState = uiState.copy(vehicleLocationError = null)
+            Log.d(tag, "Starting car location polling")
+            for (i in 1..12) {
+                if (!isActive) return@launch
+                updateStatus("Requesting location... (attempt $i)")
+
+                if (uiState.vehicleLocation != null) {
+                    Log.i(tag, "Vehicle location found after $i polls")
+                    updateStatus("Vehicle location found.")
+                    cancel()
+                    return@launch
+                }
+                delay(5000)
+                refreshData()
+            }
+            Log.w(tag, "Car location polling timed out")
+            updateStatus("Failed to get vehicle location.")
+        }
+    }
+
     private fun sendCarFinderCommand(name: String, action: suspend (String) -> Result<String?>, pin: String, targetIsOff: Boolean = false) {
         viewModelScope.launch {
             val result = sendCommand(name, action, pin)
@@ -599,6 +654,7 @@ class DashboardViewModel @Inject constructor(
         mqttClient?.disconnect()
         refreshJob?.cancel()
         carFinderPollingJob?.cancel()
+        carLocationPollingJob?.cancel()
         super.onCleared()
     }
 

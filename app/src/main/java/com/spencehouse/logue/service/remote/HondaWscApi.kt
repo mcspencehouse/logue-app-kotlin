@@ -67,4 +67,11 @@ interface HondaWscApi {
         @Path("vin") vin: String,
         @HeaderMap headers: Map<String, String>
     ): Response<JsonObject> // Using Map for generic response
+
+    @POST("REST/NGT/CIG/{action}/async/")
+    suspend fun requestVehicleLocation(
+        @Path("action") action: String, // "cfl"
+        @HeaderMap headers: Map<String, String>,
+        @Body request: RemoteCommandRequest
+    ): Response<RemoteCommandResponse>
 }
