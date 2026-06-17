@@ -289,6 +289,65 @@ fun WearApp(
 
                 item { Spacer(modifier = Modifier.height(12.dp)) }
 
+                // Divider 1
+                item {
+                    Spacer(
+                        modifier = Modifier
+                            .fillMaxWidth(0.7f)
+                            .height(1.dp)
+                            .background(MaterialTheme.colors.onSurface.copy(alpha = 0.15f))
+                    )
+                }
+
+                item { Spacer(modifier = Modifier.height(12.dp)) }
+
+                // Remote Command: Lights & Horn
+                item {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Button(
+                            onClick = { onSendCommand("/command/lights") },
+                            colors = ButtonDefaults.secondaryButtonColors(),
+                            modifier = Modifier.size(52.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Lightbulb,
+                                contentDescription = "Flash Lights",
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Button(
+                            onClick = { onSendCommand("/command/horn") },
+                            colors = ButtonDefaults.secondaryButtonColors(),
+                            modifier = Modifier.size(52.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.VolumeUp,
+                                contentDescription = "Sound Horn",
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                    }
+                }
+
+                item { Spacer(modifier = Modifier.height(12.dp)) }
+
+                // Divider 2
+                item {
+                    Spacer(
+                        modifier = Modifier
+                            .fillMaxWidth(0.7f)
+                            .height(1.dp)
+                            .background(MaterialTheme.colors.onSurface.copy(alpha = 0.15f))
+                    )
+                }
+
+                item { Spacer(modifier = Modifier.height(12.dp)) }
+
                 // Remote Command: AC Temperature Adjuster
                 item {
                     Column(
@@ -377,41 +436,6 @@ fun WearApp(
                             Icon(
                                 imageVector = Icons.Default.Stop,
                                 contentDescription = "Stop AC",
-                                modifier = Modifier.size(24.dp)
-                            )
-                        }
-                    }
-                }
-
-                item { Spacer(modifier = Modifier.height(12.dp)) }
-
-                // Remote Command: Lights & Horn
-                item {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Button(
-                            onClick = { onSendCommand("/command/lights") },
-                            colors = ButtonDefaults.secondaryButtonColors(),
-                            modifier = Modifier.size(52.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Lightbulb,
-                                contentDescription = "Flash Lights",
-                                modifier = Modifier.size(24.dp)
-                            )
-                        }
-                        Spacer(modifier = Modifier.width(16.dp))
-                        Button(
-                            onClick = { onSendCommand("/command/horn") },
-                            colors = ButtonDefaults.secondaryButtonColors(),
-                            modifier = Modifier.size(52.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.VolumeUp,
-                                contentDescription = "Sound Horn",
                                 modifier = Modifier.size(24.dp)
                             )
                         }
