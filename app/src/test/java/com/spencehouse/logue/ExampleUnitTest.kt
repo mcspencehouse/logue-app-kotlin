@@ -30,4 +30,17 @@ class ExampleUnitTest {
         assertEquals(42.757122, latitude, 0.000001)
         assertEquals(-73.94447, longitude, 0.000001)
     }
+
+    @Test
+    fun testDateParsing() {
+        val startTimeStr = "2026-04-22T13:23:11.969+0000"
+        try {
+            val sf = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ", java.util.Locale.US)
+            val date = sf.parse(startTimeStr)
+            assertNotNull("Parsed date should not be null", date)
+            println("Successfully parsed date: $date, millis: ${date?.time}")
+        } catch (e: Exception) {
+            fail("Failed to parse date: ${e.message}")
+        }
+    }
 }

@@ -14,6 +14,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import java.text.SimpleDateFormat
 import java.util.*
 import javax.inject.Inject
@@ -411,7 +412,38 @@ class VehicleService @Inject constructor(
             val body = resp.body()
             if (resp.isSuccessful && body != null) {
                 Log.d(tag, "Successfully got climate status")
-                Result.success(body)
+                
+                var finalBody = body
+                val status = body["climateStatus"]?.jsonPrimitive?.content ?: "OFF"
+                val startTimeStr = body["climateStartTime"]?.jsonPrimitive?.content
+                
+                if (status.uppercase() == "ON" && !startTimeStr.isNullOrEmpty()) {
+                    try {
+                        val sf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.US)
+                        val date = sf.parse(startTimeStr)
+                        if (date != null) {
+                            val diffMs = System.currentTimeMillis() - date.time
+                            // Remote climate automatically shuts off after 10-20 minutes.
+                            // If start time is older than 30 minutes, the state is stale.
+                            if (diffMs > 30 * 60 * 1000) {
+                                Log.w(tag, "Climate status is ON but startTime ($startTimeStr) is stale (> 30 min). Overriding to OFF.")
+                                finalBody = kotlinx.serialization.json.buildJsonObject {
+                                    body.forEach { (key, value) ->
+                                        if (key == "climateStatus") {
+                                            put(key, kotlinx.serialization.json.JsonPrimitive("OFF"))
+                                        } else {
+                                            put(key, value)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } catch (e: Exception) {
+                        Log.e(tag, "Error parsing climateStartTime: $startTimeStr", e)
+                    }
+                }
+                
+                Result.success(finalBody)
             } else {
                 val errorBody = resp.errorBody()?.string()
                 Log.e(tag, "Failed to get climate status. Code: ${resp.code()}, Error: $errorBody")
