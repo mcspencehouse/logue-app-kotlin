@@ -125,12 +125,64 @@ fun WearApp(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
+            val hasData = batteryPercentage in 0..100
+            val batteryProgress = if (hasData) batteryPercentage / 100f else 0f
+            val batteryColor = when {
+                batteryPercentage > 70 -> Color(0xFFa8d48b)
+                batteryPercentage > 30 -> Color(0xFFa0cfcf)
+                else -> Color(0xFFffb4ab)
+            }
+
+            BoxWithConstraints(
+                modifier = Modifier.fillMaxSize().padding(6.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(
+                    progress = batteryProgress,
+                    modifier = Modifier.fillMaxSize(),
+                    strokeWidth = 6.dp,
+                    indicatorColor = batteryColor,
+                    trackColor = MaterialTheme.colors.onSurface.copy(alpha = 0.1f)
+                )
+
+                if (hasData) {
+                    val angle = (targetLimit / 100f) * 360f
+                    val radians = Math.toRadians(angle.toDouble() - 90)
+                    val radius = (maxWidth - 6.dp) / 2
+                    val x = radius * cos(radians).toFloat()
+                    val y = radius * sin(radians).toFloat()
+
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier
+                            .size(16.dp)
+                            .offset(x = x, y = y)
+                            .background(MaterialTheme.colors.background, CircleShape)
+                            .border(
+                                1.5.dp,
+                                MaterialTheme.colors.onSurface,
+                                CircleShape
+                            )
+                    ) {
+                        Icon(
+                            Icons.Default.Bolt,
+                            contentDescription = "Charge Target",
+                            tint = MaterialTheme.colors.onSurface,
+                            modifier = Modifier
+                                .size(12.dp)
+                                .padding(1.dp)
+                        )
+                    }
+                }
+            }
+
             val listState = rememberScalingLazyListState()
             
             ScalingLazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 state = listState,
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 24.dp)
             ) {
                 // Title
                 item {
@@ -148,87 +200,34 @@ fun WearApp(
                 item {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.padding(vertical = 8.dp)
+                        modifier = Modifier.padding(vertical = 12.dp)
                     ) {
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier.size(110.dp)
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            val batteryProgress = if (batteryPercentage in 0..100) batteryPercentage / 100f else 0f
-                            val batteryColor = when {
-                                batteryPercentage > 70 -> Color(0xFFa8d48b)
-                                batteryPercentage > 30 -> Color(0xFFa0cfcf)
-                                else -> Color(0xFFffb4ab)
-                            }
-                            CircularProgressIndicator(
-                                progress = batteryProgress,
-                                modifier = Modifier.fillMaxSize(),
-                                strokeWidth = 6.dp,
-                                indicatorColor = batteryColor,
-                                trackColor = MaterialTheme.colors.onSurface.copy(alpha = 0.1f)
-                            )
-                            
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    if (isPluggedIn) {
-                                        Icon(
-                                            imageVector = Icons.Default.Bolt,
-                                            contentDescription = "Plugged In",
-                                            tint = Color(0xFFa8d48b),
-                                            modifier = Modifier.size(16.dp)
-                                        )
-                                    }
-                                    val batteryStr = if (batteryPercentage in 0..100) "$batteryPercentage%" else "--%"
-                                    Text(
-                                        text = batteryStr,
-                                        style = MaterialTheme.typography.title2,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                }
-                                val rangeStr = if (range >= 0) "$range mi" else "-- mi"
-                                Text(
-                                    text = rangeStr,
-                                    style = MaterialTheme.typography.body2,
-                                    color = MaterialTheme.colors.onSurfaceVariant
+                            if (isPluggedIn) {
+                                Icon(
+                                    imageVector = Icons.Default.Bolt,
+                                    contentDescription = "Plugged In",
+                                    tint = Color(0xFFa8d48b),
+                                    modifier = Modifier.size(20.dp)
                                 )
                             }
-                            
-                            if (batteryPercentage in 0..100) {
-                                val angle = (targetLimit / 100f) * 360f
-                                val radians = Math.toRadians(angle.toDouble() - 90)
-                                val radius = 52 // (110 - 6) / 2
-                                val x = (radius * cos(radians)).toFloat()
-                                val y = (radius * sin(radians)).toFloat()
-                                
-                                Box(
-                                    contentAlignment = Alignment.Center,
-                                    modifier = Modifier
-                                        .size(16.dp)
-                                        .offset(x.dp, y.dp)
-                                        .background(MaterialTheme.colors.background, CircleShape)
-                                        .border(
-                                            1.5.dp,
-                                            MaterialTheme.colors.onSurface,
-                                            CircleShape
-                                        )
-                                ) {
-                                    Icon(
-                                        Icons.Default.Bolt,
-                                        contentDescription = "Charge Target",
-                                        tint = MaterialTheme.colors.onSurface,
-                                        modifier = Modifier
-                                            .size(12.dp)
-                                            .padding(1.dp)
-                                    )
-                                }
-                            }
+                            val batteryStr = if (hasData) "$batteryPercentage%" else "--%"
+                            Text(
+                                text = batteryStr,
+                                style = MaterialTheme.typography.display2,
+                                fontWeight = FontWeight.Bold
+                            )
                         }
+                        val rangeStr = if (range >= 0) "$range mi range" else "-- mi range"
+                        Text(
+                            text = rangeStr,
+                            style = MaterialTheme.typography.body1,
+                            color = MaterialTheme.colors.onSurfaceVariant
+                        )
                         
-                        Spacer(modifier = Modifier.height(6.dp))
+                        Spacer(modifier = Modifier.height(4.dp))
                         
                         Text(
                             text = statusText,
