@@ -167,11 +167,14 @@ class DashboardViewModel @Inject constructor(
         val rb = reported.optJSONObject("responseBody") ?: return
 
         Log.d(tag, "Updating UI with reported vehicle location data")
-        val latitude = rb.optDouble("latitude")
-        val longitude = rb.optDouble("longitude")
-        val timestamp = rb.optLong("timestamp")
+        val gpsData = rb.optJSONObject("gpsData")
+        val coordinate = gpsData?.optJSONObject("coordinate")
+        
+        val latitude = coordinate?.optDouble("latitude") ?: Double.NaN
+        val longitude = coordinate?.optDouble("longitude") ?: Double.NaN
+        val timestamp = data.optLong("timestamp", System.currentTimeMillis() / 1000)
 
-        if (latitude != 0.0 && longitude != 0.0) {
+        if (!latitude.isNaN() && !longitude.isNaN() && latitude != 0.0 && longitude != 0.0) {
             uiState = uiState.copy(
                 vehicleLocation = VehicleLocation(latitude, longitude, timestamp)
             )
