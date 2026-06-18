@@ -25,6 +25,7 @@ class VehicleUpdateWorker @AssistedInject constructor(
     @Assisted workerParams: WorkerParameters,
     private val authService: AuthService,
     private val vehicleService: VehicleService,
+    private val wearableSyncManager: WearableSyncManager,
 ) : CoroutineWorker(appContext, workerParams) {
 
     private val tag = "VehicleUpdateWorker"
@@ -59,6 +60,18 @@ class VehicleUpdateWorker @AssistedInject constructor(
                 BatteryWidget().updateAll(appContext)
                 ClimateWidget().updateAll(appContext)
                 CommandsWidget().updateAll(appContext)
+
+                // Sync to Wear OS
+                wearableSyncManager.syncVehicleTelemetry(
+                    vin,
+                    newBattery,
+                    data.range,
+                    sessionManager.cachedChargeStatus ?: "Unknown",
+                    sessionManager.targetChargeLevel,
+                    sessionManager.cachedIsPluggedIn,
+                    sessionManager.useCelsius,
+                    sessionManager.useKilometers
+                )
                 
             }.onFailure {
                 Log.e(tag, "Failed to get dashboard data", it)

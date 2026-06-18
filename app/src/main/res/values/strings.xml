@@ -6,4 +6,5 @@
     <string name="climate_widget_description">Quickly start or stop the climate control and set the target temperature.</string>
     <string name="commands_widget_name">Remote Commands</string>
     <string name="commands_widget_description">Quick access to lock, unlock, lights, and horn commands.</string>
+    <string name="fgs_special_use_justification">Start and maintain vehicle climate control session</string>
 </resources>

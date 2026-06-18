@@ -2,6 +2,7 @@ package com.spencehouse.logue.service
 
 import android.util.Log
 import com.google.android.gms.wearable.MessageEvent
+import com.google.android.gms.wearable.Wearable
 import com.google.android.gms.wearable.WearableListenerService
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
@@ -23,8 +24,14 @@ class PhoneWearableListenerService : WearableListenerService() {
         fun wearableSyncManager(): WearableSyncManager
     }
 
+    override fun onCreate() {
+        super.onCreate()
+        Log.i(tag, "PhoneWearableListenerService created")
+    }
+
     override fun onMessageReceived(messageEvent: MessageEvent) {
-        Log.d(tag, "Message received from Wear OS: ${messageEvent.path}")
+        val path = messageEvent.path
+        Log.i(tag, "Message received from Wear OS: $path")
         
         val entryPoint = EntryPointAccessors.fromApplication(
             applicationContext,
@@ -33,10 +40,14 @@ class PhoneWearableListenerService : WearableListenerService() {
         val vehicleService = entryPoint.vehicleService()
         val authService = entryPoint.authService()
 
-        val path = messageEvent.path
         if (path == "/request/telemetry") {
+            Log.i(tag, "Handling /request/telemetry")
             serviceScope.launch {
                 try {
+                    // Send an ACK message back
+                    Wearable.getMessageClient(applicationContext)
+                        .sendMessage(messageEvent.sourceNodeId, "/response/telemetry_received", byteArrayOf())
+
                     val wearableSyncManager = entryPoint.wearableSyncManager()
                     val sessionManager = authService.sessionManager
                     val cachedVin = authService.selectedVin ?: sessionManager.vin
@@ -46,8 +57,10 @@ class PhoneWearableListenerService : WearableListenerService() {
                     val targetLimit = sessionManager.targetChargeLevel
                     val isPluggedIn = sessionManager.cachedIsPluggedIn
                     
-                    if (!cachedVin.isNullOrEmpty() && cachedBattery >= 0 && cachedRange >= 0) {
-                        Log.i(tag, "Sending cached telemetry on request: Battery $cachedBattery%, Range $cachedRange, Target $targetLimit, Plugged $isPluggedIn")
+                    Log.d(tag, "Cached values - VIN: $cachedVin, Battery: $cachedBattery, Range: $cachedRange")
+
+                    if (!cachedVin.isNullOrEmpty() && cachedBattery >= 0) {
+                        Log.i(tag, "Sending cached telemetry: Battery $cachedBattery%, Range $cachedRange")
                         wearableSyncManager.syncVehicleTelemetry(
                             cachedVin,
                             cachedBattery,
@@ -59,7 +72,10 @@ class PhoneWearableListenerService : WearableListenerService() {
                             sessionManager.useKilometers
                         )
                     } else {
-                        Log.w(tag, "No cached telemetry available to sync")
+                        Log.w(tag, "No sufficient cached telemetry available (VIN: $cachedVin, Battery: $cachedBattery)")
+                        // Tell the watch why it didn't get data
+                        Wearable.getMessageClient(applicationContext)
+                            .sendMessage(messageEvent.sourceNodeId, "/response/no_data", byteArrayOf())
                     }
                 } catch (e: Exception) {
                     Log.e(tag, "Error handling Wear OS telemetry request", e)
@@ -83,7 +99,6 @@ class PhoneWearableListenerService : WearableListenerService() {
 
         serviceScope.launch {
             try {
-                val path = messageEvent.path
                 when {
                     path == "/command/lock" -> {
                         Log.i(tag, "Executing Lock from Wear OS for VIN $vin")
@@ -116,7 +131,7 @@ class PhoneWearableListenerService : WearableListenerService() {
                     }
                 }
             } catch (e: Exception) {
-                Log.e(tag, "Error executing Wear OS command ${messageEvent.path}", e)
+                Log.e(tag, "Error executing Wear OS command $path", e)
             }
         }
     }
